@@ -11,16 +11,26 @@ const startTimer = () => {
 
 const checkpoint = () => {
     checkpointTime = new Date();
-    console.log(checkpointTime - startTime);
     var timeDiff = checkpointTime - startTime;
-    
-    // get seconds 
     var seconds = timeDiff/1000;
-
     startTime = checkpointTime;
-
     return seconds;
 }
+
+const checkpoint2 = () => {
+    checkpointTime = new Date();
+    var timeDiff = checkpointTime - startTime2;
+    var seconds = timeDiff/1000;
+    startTime2 = checkpointTime;
+    return seconds;
+}
+
+const mouseover = (event) => {
+    enterCheckpoint = checkpoint2();
+    console.log("enter", enterCheckpoint);
+
+    fits.ballistic_times.push(enterCheckpoint);
+} 
 
 const toggleGreeting = (show) => {
     const greeting = document.querySelector('#greeting');
@@ -37,13 +47,15 @@ const toggleGreeting = (show) => {
 const targetClick = (event, id) => {
 
     checkpointHere = checkpoint();
-    console.log("time", checkpointHere);
+
+    clickCheckpoint = checkpoint2();
 
     // Get event coordinates
     const x = event.clientX;
     const y = event.clientY;
 
     // Update Fits
+    fits.time_to_select.push(clickCheckpoint);
 
     // Get center location of this target
     const target = document.querySelector(`#target-button-${id}`);
@@ -73,7 +85,7 @@ const startTest = (event) => {
     toggleGreeting(false);
 
     // Get stats div
-    const stats = document.querySelector('#stats');
+    const stats = document.querySelector('#statsBox');
     stats.style.display = 'none';
     
     // Start timer
@@ -103,10 +115,11 @@ const startTest = (event) => {
         const newButton = button.cloneNode(true);
         newButton.setAttribute('class', 'target-button');
         newButton.setAttribute('onclick', `targetClick(event, ${i})`);
+        newButton.setAttribute('onmouseover', `mouseover(event)`);
         newButton.setAttribute('id', `target-button-${i}`)
         buttons.push(newButton);
-        buttons[i].style.top = `${Math.floor(i / 5) * 250 + 300}px`;
-        buttons[i].style.left = `${(i % 5) * 250 + 350}px`;
+        buttons[i].style.top = `${Math.floor(i / 5) * 200 + 350}px`;
+        buttons[i].style.left = `${(i % 5) * 200 + 500}px`;
         box.appendChild(buttons[i]);
     }
 }
@@ -122,15 +135,20 @@ const resetTest = (showStats=false) => {
     if (showStats) {
         // Calculate stats
         throughput = fits.calculate_modified_law();
-
-        /* Remove h2 tag
-        const h2 = document.querySelector('#greetingHeading');
-        h2.remove(); */
+        times = fits.get_average_times();
         
-        // Display stats above the start button
-        const stats = document.querySelector('#stats');
+        const stats = document.querySelector('#statsBox');
         stats.style.display = 'block';
-        stats.innerHTML = `Throughput: ${throughput}`;
+
+        // Display stats above the start button
+        const throughputElement = document.querySelector('#throughput');
+        throughputElement.innerHTML = `Throughput: ${throughput}`;
+
+        const ballisticElement = document.querySelector('#ballistic');
+        ballisticElement.innerHTML = `Average time to get to target: ${times[0]}`;
+
+        const selectionElement = document.querySelector('#selection');
+        selectionElement.innerHTML = `Average time to select target: ${times[1]}`;
     }
 
 
